@@ -1,0 +1,12 @@
+{
+  "name": "anki-card-generate",
+  "version": "0.1.0",
+  "description": "Turn text, files, URLs, PDFs, Jira or Confluence pages into Anki cards. A generator agent writes the cards, separate validator agents check them against Anki rules and your own rules, and failing cards are rewritten for up to 3 rounds.",
+  "author": {
+    "name": "jap963852741",
+    "url": "https://github.com/jap963852741"
+  },
+  "license": "MIT",
+  "keywords":["anki", "flashcards", "spaced-repetition", "study"],
+  "skills": ["./skills/anki-card-generate"]
+}

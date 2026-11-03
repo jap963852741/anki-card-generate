@@ -1,0 +1,16 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-marketplace.json",
+  "name": "anki-card-generate",
+  "description": "Generate validated, importable Anki cards from any source.",
+  "owner": {
+    "name": "jap963852741"
+  },
+  "plugins": [
+    {
+      "name": "anki-card-generate",
+      "description": "Turn text, files, URLs, PDFs, Jira or Confluence pages into validated Anki cards.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
