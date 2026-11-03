@@ -3,7 +3,8 @@
 
   cards.py check  cards.jsonl --count N [--prev prev.jsonl --handoff prev-handoff.md]
   cards.py export cards.jsonl out.tsv [--handoff last-handoff.md] [--deck D] [--basic-name Basic] [--cloze-name Cloze]
-  cards.py handoff cards.jsonl --count N --round R --out handoff.md [--review review.json ...]
+  cards.py handoff cards.jsonl --count N --round R --out handoff.md [--prev prev.jsonl] [--review review.json ...]
+  cards.py changed cards.jsonl --prev prev.jsonl
 
 handoff exits 0 (PASS, no file), 1 (FAIL, file written) or 2 (broken review file).
 Layout and rules: ../handoff-spec.md
@@ -18,6 +19,7 @@ from pathlib import Path
 
 CLOZE = re.compile(r"\{\{c\d+::.+?\}\}", re.S)
 TYPES = ("basic", "cloze")
+CARD_ID = re.compile(r"\bc\d+\b")
 
 
 def load(path):
@@ -91,14 +93,28 @@ def load_review(path, card_ids):
     return r
 
 
-def handoff(cards, problems, reviews, round_no, inputs):
-    by_card, deck = {}, [f"[structure] {p}" for p in problems]
+def locked_ids(cards, prev_path):
+    """Ids whose card is identical to last round's: it passed then, so it is not judged again."""
+    prev = {c.get("id"): c for c in load(prev_path)[0]}
+    return {c.get("id") for c in cards if c.get("id") in prev and prev[c.get("id")] == c}
+
+
+def handoff(cards, problems, reviews, round_no, inputs, locked):
+    by_card, deck, ignored = {}, [f"[structure] {p}" for p in problems], []
     for r in reviews:
         for f in r["cards"]:
-            by_card.setdefault(f["id"], []).append(f"[{r['validator']} {f['rule']}] {f['problem']} → {f['fix']}")
-        deck += [f"[{r['validator']} {f['rule']}] {f['problem']} → {f['fix']}" for f in r["deck"]]
+            item = f"[{r['validator']} {f['rule']}] {f['id']}: {f['problem']} → {f['fix']}"
+            if f["id"] in locked:
+                ignored.append(item)
+            else:
+                by_card.setdefault(f["id"], []).append(item.replace(f"{f['id']}: ", "", 1))
+        for f in r["deck"]:
+            item = f"[{r['validator']} {f['rule']}] {f['problem']} → {f['fix']}"
+            named = set(CARD_ID.findall(f"{f['problem']} {f['fix']}"))
+            (ignored if named and named <= locked else deck).append(item)
+    ignored = list(dict.fromkeys(ignored))
     if not by_card and not deck:
-        return None
+        return None, ignored
 
     ids = [c.get("id") for c in cards if c.get("id")]
     keep = [i for i in ids if i not in by_card]
@@ -111,7 +127,8 @@ def handoff(cards, problems, reviews, round_no, inputs):
     deck = list(dict.fromkeys(deck))
     lines += [f"## Deck-level ({len(deck)})", *([f"- {x}" for x in deck] or ["none"]), ""]
     lines += [f"## Keep unchanged ({len(keep)})", ", ".join(keep) or "none", ""]
-    return "\n".join(lines)
+    lines += [f"## Ignored: findings on locked cards ({len(ignored)})", *([f"- {x}" for x in ignored] or ["none"]), ""]
+    return "\n".join(lines), ignored
 
 
 def read_handoff(path):
@@ -132,7 +149,7 @@ def read_handoff(path):
 def check_keep(cards, prev_path, handoff_path):
     prev = {c.get("id"): c for c in load(prev_path)[0]}
     _, deck, keep = read_handoff(handoff_path)
-    named = set(re.findall(r"\bc\d+\b", " ".join(deck)))
+    named = set(CARD_ID.findall(" ".join(deck)))
     now = {c.get("id"): c for c in cards}
     problems = []
     for cid in keep:
@@ -185,6 +202,10 @@ def main():
     ph.add_argument("--round", type=int, required=True)
     ph.add_argument("--out", required=True)
     ph.add_argument("--review", action="append", default=[])
+    ph.add_argument("--prev")
+    pd = sub.add_parser("changed")
+    pd.add_argument("cards")
+    pd.add_argument("--prev", required=True)
     args = p.parse_args()
 
     cards, problems = load(args.cards)
@@ -198,6 +219,11 @@ def main():
     if args.cmd == "check" and args.prev:
         problems += check_keep(cards, args.prev, args.handoff)
 
+    if args.cmd == "changed":
+        locked = locked_ids(cards, args.prev)
+        print(", ".join(c.get("id") for c in cards if c.get("id") not in locked) or "none")
+        return
+
     if args.cmd == "handoff":
         card_ids = {c.get("id") for c in cards}
         try:
@@ -206,7 +232,10 @@ def main():
             print(f"BROKEN REVIEW: {e}")
             sys.exit(2)
         inputs = [Path(x).name for x in (args.cards, *args.review)]
-        text = handoff(cards, problems, reviews, args.round, inputs)
+        locked = locked_ids(cards, args.prev) if args.prev else set()
+        text, ignored = handoff(cards, problems, reviews, args.round, inputs, locked)
+        if ignored:
+            print(f"ignored {len(ignored)} finding(s) on locked cards")
         if text is None:
             print("PASS: nothing to hand off")
             return

@@ -28,6 +28,18 @@ Work folder: `{work_dir}`
 3. Only real rule breaks. A card you would merely phrase differently is not a
    finding. An empty review is a good review.
 
+{if round >= 2:}
+## Round {round}: review only {review_ids}
+
+Every other card passed an earlier round and has not changed since. It is
+locked: do not report it — `cards.py handoff` drops findings on locked cards.
+Read locked cards only to compare against the reviewed ones for `D2` / `D3`.
+
+`D1`: report a main point only if it has no card because a reviewed card
+changed or replaced the one that covered it. The fix must change a reviewed
+card, never a locked one.
+{end if}
+
 ## Output: `{work_dir}/review-{round}-anki.json`
 
 Schema and the rules for writing a finding are in "Review files" of

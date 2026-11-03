@@ -152,7 +152,9 @@ A few rules keep the loop honest:
 - **The fix list is built by a script, not written by hand**, so no failure
   gets dropped or reworded on the way back.
 - **Cards that passed are locked.** In the next round the writer may change
-  only the cards on the fix list; the script rejects any other edit.
+  only the cards on the fix list, and the checkers review only the new or
+  changed cards. The script rejects any other edit and ignores any finding on
+  a locked card, so a card that passed once is not flagged again.
 - **Every card quotes the source sentence it is based on.** Facts that are not
   in the source fail the check.
 
@@ -180,7 +182,6 @@ you:
 
 - One run is meant for one chapter or article, not a whole book.
 - Cards are plain text. No images, audio or formatting.
-- The checkers are AI agents, so they are not perfectly consistent: a card
-  that passed in one round can be flagged in the next. The 3-round limit and
-  leaving out failing cards stop this from looping forever, but it can cost a
-  card or two.
+- The checkers are AI agents, so a rewritten card can fail again for a new
+  reason. Cards that still fail after 3 rounds are left out, so a run can
+  deliver a card or two fewer than asked.

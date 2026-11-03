@@ -18,8 +18,18 @@ then the generator fixes something nobody reported.
 
 ```bash
 python3 <CARDS_PY> handoff cards-N.jsonl --count <number> --round N \
-  --out handoff-N.md [--review review-N-anki.json] [--review review-N-custom.json]
+  --out handoff-N.md [--review review-N-anki.json] [--review review-N-custom.json] \
+  [--prev cards-<N-1>.jsonl]   # round 2+
 ```
+
+**Locked cards (round 2+).** With `--prev`, a card identical to last round's
+is locked: it passed then and is not judged again. Validators are told to
+review only the new or changed cards (`cards.py changed`), and the script
+drops any finding that still lands on a locked card — a per-card finding on
+it, or a Deck-level finding whose ids are all locked. Dropped findings are
+listed under "Ignored" and never send a card back. Without this, each fresh
+validator found a new nit in a card that had already passed (D1 picked c09 in
+round 2 and c08 in round 3 of the same run) and the loop never settled.
 
 | Exit | Meaning | Next |
 |---|---|---|
@@ -86,11 +96,16 @@ Inputs: cards-2.jsonl, review-2-anki.json, review-2-custom.json
 
 ## Keep unchanged (8)
 c01, c02, c04, c05, c06, c08, c09, c10
+
+## Ignored: findings on locked cards (0)
+none
 ```
 
 - Item line: `- [<validator> <rule>] <problem> → <fix>`. Structural
   problems are `- [structure] <message from cards.py check>`.
 - Items are grouped by card id, in id order. Exact duplicates are dropped.
+- Ignored = findings on locked cards, kept for the record only. The
+  generator does not act on them.
 - Keep unchanged = every card id with no per-card item. A card named only in
   a Deck-level item (c09 above) is still listed here; the deck item decides
   whether it changes.

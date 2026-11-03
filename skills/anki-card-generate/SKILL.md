@@ -115,13 +115,25 @@ Send both Agent calls in one message:
 - `prompts/anki-validator.md` — always.
 - `prompts/custom-rules-validator.md` — only if `request.md` has custom rules.
 
+Round 2+: a card identical to last round's passed then and is locked — it is
+not judged again, so a fresh validator cannot flip a card that already passed.
+Fill `{review_ids}` with the cards that are new or changed:
+
+```bash
+python3 {cards_py} changed {work_dir}/cards-N.jsonl --prev {work_dir}/cards-<N-1>.jsonl
+```
+
 ### 2d. Handoff
 
 ```bash
 python3 {cards_py} handoff {work_dir}/cards-N.jsonl --count {number} --round N \
   --out {work_dir}/handoff-N.md \
-  --review {work_dir}/review-N-anki.json [--review {work_dir}/review-N-custom.json]
+  --review {work_dir}/review-N-anki.json [--review {work_dir}/review-N-custom.json] \
+  [--prev {work_dir}/cards-<N-1>.jsonl]   # round 2+
 ```
+
+With `--prev`, findings on locked cards are dropped and listed under
+"Ignored" in the handoff, so they never send a card back.
 
 | Exit | Next |
 |---|---|
@@ -165,6 +177,7 @@ Show the user:
 | Generator rewrites cards that already passed | `check --prev --handoff` fails it; "Keep unchanged" is byte for byte |
 | Still-failing cards end up in the TSV | Export with `--handoff handoff-N.md` when the last round was FAIL |
 | Validator given the change log or last handoff | Validators get only cards, source, rules — they judge cards fresh |
+| A fresh validator flags a card that passed last round | Round 2+: pass `{review_ids}` from `cards.py changed`, and `--prev` to `handoff` so findings on locked cards are ignored |
 | Anki validator flags what a custom rule asked for | It reads `request.md`; custom rules win on conflict |
 | Custom-rules validator spawned with no custom rules | Only when `request.md` has custom rules |
 | Trusting the generator's "check passed" | Main thread re-runs `cards.py check` |

@@ -27,6 +27,15 @@ Work folder: `{work_dir}`
    reading and say so in `problem`; do not invent a stricter one.
 3. An empty review is a good review.
 
+{if round >= 2:}
+## Round {round}: review only {review_ids}
+
+Every other card passed an earlier round and has not changed since. It is
+locked: do not report it — `cards.py handoff` drops findings on locked cards.
+A deck-level rule (e.g. "at least 5 cloze cards") still counts the whole
+deck, but its fix must change a reviewed card, never a locked one.
+{end if}
+
 ## Output: `{work_dir}/review-{round}-custom.json`
 
 Schema and the rules for writing a finding are in "Review files" of
