@@ -10,7 +10,7 @@ in the file you import has passed every check.
 
 ## Install
 
-In Claude Code:
+### Claude Code (plugin)
 
 ```
 /plugin marketplace add jap963852741/anki-card-generate
@@ -19,11 +19,43 @@ In Claude Code:
 
 Update later with `/plugin update`.
 
-Without the plugin system, copy `skills/anki-card-generate/` to
-`~/.claude/skills/anki-card-generate/` and restart Claude Code.
+### Other agents (Codex, Cursor, Gemini CLI, OpenCode, GitHub Copilot, …)
 
-You also need `python3` (standard library only) and the
-[Anki](https://apps.ankiweb.net/) desktop app to import the result.
+The skill follows the open Agent Skills format (`SKILL.md` plus files), so the
+[skills CLI](https://github.com/vercel-labs/skills) can install it for any
+agent it supports:
+
+```bash
+npx skills add jap963852741/anki-card-generate -g
+```
+
+`-g` installs it for your user; leave it out to install into the current
+project only. Add `-a <agent>` (e.g. `-a codex`) to pick the agent instead of
+choosing from the prompt.
+
+### Manual copy
+
+Copy `skills/anki-card-generate/` into your agent's skills folder and restart
+the agent:
+
+| Agent | Global folder |
+|---|---|
+| Claude Code | `~/.claude/skills/` |
+| Codex | `~/.agents/skills/` |
+| Cursor | `~/.cursor/skills/` |
+| Gemini CLI | `~/.gemini/skills/` |
+| OpenCode | `~/.config/opencode/skills/` |
+| GitHub Copilot | `~/.copilot/skills/` |
+
+### Requirements
+
+- **An agent that can start subagents.** The skill runs a writer agent and
+  separate checker agents. It was built for Claude Code; other agents need to
+  be able to spawn subagents, and the skill has not been tried on them yet.
+- **Jira / Confluence sources** need an Atlassian MCP server connected to your
+  agent. Text, files, URLs and PDFs need nothing extra.
+- `python3` (standard library only), and the
+  [Anki](https://apps.ankiweb.net/) desktop app to import the result.
 
 ## Usage
 
