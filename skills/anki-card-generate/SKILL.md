@@ -1,6 +1,6 @@
 ---
 name: anki-card-generate
-description: Use when the user gives a source (pasted text, a file, a URL, a PDF, a Jira / Confluence page) and asks to turn it into Anki cards / 「做成 anki 卡」/ 「幫我出 anki 題目」/ "generate anki cards". Inputs are source, number of cards, and optional custom rules. Loops a generator agent → validator agents (Anki-rules validator always, custom-rules validator only when custom rules are given, in parallel); on any fail `cards.py handoff` builds handoff-N.md from the validators' JSON reviews and the generator re-generates only what it names. Max 3 rounds by default; cards still failing after the last round are left out of the output. Delivers an Anki-importable TSV. Optional args: deck, max rounds (default 3), output path.
+description: Use when the user gives a source (pasted text, a file, a URL, a PDF, a Jira / Confluence page) and asks to turn it into Anki cards / flashcards ("generate anki cards", "make flashcards from this"). Inputs are source, number of cards, and optional custom rules. Loops a generator agent → validator agents (Anki-rules validator always, custom-rules validator only when custom rules are given, in parallel); on any fail `cards.py handoff` builds handoff-N.md from the validators' JSON reviews and the generator re-generates only what it names. Max 3 rounds by default; cards still failing after the last round are left out of the output. Delivers an Anki-importable TSV. Optional args: deck, max rounds (default 3), output path.
 ---
 
 # anki-card-generate

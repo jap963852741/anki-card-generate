@@ -34,7 +34,7 @@ Make 10 anki cards from https://en.wikipedia.org/wiki/Photosynthesis
 ```
 
 ```
-幫我把 ~/notes/tcp.md 做成 15 張 anki 卡，deck 叫 Network::TCP
+Make 15 anki cards from ~/notes/tcp.md, deck Network::TCP
 ```
 
 ```
